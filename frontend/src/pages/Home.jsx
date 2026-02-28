@@ -38,8 +38,8 @@ export default function Home({ items, onGoItems, onGoAdd }) {
       </section>
 
       <section className="panel">
-        <h2 className="panel__title">Milestone note</h2>
-        <p>This is a frontend-only demo. Changes persist until you reload the browser tab.</p>
+        <h2 className="panel__title">Recent activities</h2>
+        <p>This is a demo note.</p>
       </section>
     </>
   );
