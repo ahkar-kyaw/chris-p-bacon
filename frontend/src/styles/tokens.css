@@ -1,0 +1,61 @@
+:root {
+  /* ---------- PALETTE ---------- */
+  --tokens-color-gray-0:   #ffffff;
+  --tokens-color-gray-200: #f6f7f8;
+  --tokens-color-gray-400: #d6dbe1;
+  --tokens-color-gray-600: #5f6770;
+  --tokens-color-gray-800: #101214;
+  --tokens-color-gray-900: #000000;
+
+  --tokens-color-blue-500: #2d5bd1;
+
+  /* ---------- SEMANTIC ---------- */
+  --tokens-color-text-primary:   var(--tokens-color-gray-800);
+  --tokens-color-text-secondary: var(--tokens-color-gray-600);
+  --tokens-color-text-inverse:   var(--tokens-color-gray-0);
+
+  --tokens-color-surface-page:    var(--tokens-color-gray-200);
+  --tokens-color-surface:         var(--tokens-color-gray-0);
+  --tokens-color-surface-muted:   var(--tokens-color-gray-200);
+  --tokens-color-surface-raised:  var(--tokens-color-gray-0);
+  --tokens-color-surface-tint:          #fafafa;
+  --tokens-color-surface-hover:         #f1f3f6;
+  --tokens-color-surface-accent-hover:  #eef2ff;
+  --tokens-color-surface-accent-active: #e6edff;
+
+  --tokens-color-border:          var(--tokens-color-gray-400);
+
+  --tokens-color-accent:          var(--tokens-color-blue-500);
+  --tokens-color-accent-ink:      var(--tokens-color-gray-0);
+
+  --tokens-color-link:            var(--tokens-color-blue-500);
+  --tokens-color-focus-ring:      var(--tokens-color-blue-500);
+
+  --tokens-shadow-fab: 0 0.625rem 1.5rem rgba(0, 0, 0, 0.18);
+}
+
+:root[data-theme="dark"] {
+  --tokens-color-text-primary:   #f6f7f8;
+  --tokens-color-text-secondary: rgba(246, 247, 248, 0.7);
+  --tokens-color-text-inverse:   #0b0f14;
+
+  --tokens-color-surface-page:   #0b0f14;
+  --tokens-color-surface:        #121826;
+  --tokens-color-surface-muted:  #0f1522;
+  --tokens-color-surface-raised: #121826;
+  --tokens-color-surface-tint:   #182034;
+  --tokens-color-surface-hover:  rgba(255, 255, 255, 0.06);
+
+  --tokens-color-surface-accent-hover:  rgba(45, 91, 209, 0.16);
+  --tokens-color-surface-accent-active: rgba(45, 91, 209, 0.26);
+
+  --tokens-color-border:     rgba(255, 255, 255, 0.12);
+
+  --tokens-color-accent:     #60a5fa;
+  --tokens-color-accent-ink: #0b0f14;
+
+  --tokens-color-link:       #93c5fd;
+  --tokens-color-focus-ring: #60a5fa;
+
+  --tokens-shadow-fab: 0 0.625rem 1.5rem rgba(0, 0, 0, 0.45);
+}
