@@ -1,30 +1,31 @@
+import { NavLink } from "react-router";
 import CategoryFilter from "./CategoryFilter.jsx";
 
-function NavItem({ active, onClick, children }) {
-  const className = ["app-nav__link", active ? "app-nav__link--active" : ""].filter(Boolean).join(" ");
-
-  return (
-    <li>
-      <button type="button" className={className} onClick={onClick}>
-        {children}
-      </button>
-    </li>
-  );
+function getNavClass({ isActive }) {
+  return ["app-nav__link", isActive ? "app-nav__link--active" : ""]
+    .filter(Boolean)
+    .join(" ");
 }
 
-export default function AppNav({ currentPage, onGo, category, onSelectCategory }) {
+export default function AppNav({ category, onSelectCategory }) {
   return (
     <nav className="app-nav" aria-label="Primary">
       <ul className="app-nav__list">
-        <NavItem active={currentPage === "home"} onClick={() => onGo("home")}>
-          Home
-        </NavItem>
-        <NavItem active={currentPage === "items"} onClick={() => onGo("items")}>
-          Items
-        </NavItem>
-        <NavItem active={currentPage === "add-item"} onClick={() => onGo("add-item")}>
-          Add Item
-        </NavItem>
+        <li>
+          <NavLink to="/" end className={getNavClass}>
+            Home
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/items" className={getNavClass}>
+            Items
+          </NavLink>
+        </li>
+        <li>
+          <NavLink to="/add-item" className={getNavClass}>
+            Add Item
+          </NavLink>
+        </li>
       </ul>
 
       <CategoryFilter category={category} onSelectCategory={onSelectCategory} />

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Route, Routes, useNavigate } from "react-router";
 
 import "./styles/tokens.css";
 import "./styles/styles.css";
@@ -18,12 +19,11 @@ function normalizeTheme(next) {
 }
 
 export default function App() {
-  const [page, setPage] = useState("home");
+  const navigate = useNavigate();
 
   const [items, setItems] = useState(() => INITIAL_ITEMS);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
-
   const [theme, setTheme] = useState("light");
 
   useEffect(() => {
@@ -59,31 +59,6 @@ export default function App() {
     );
   }
 
-  let pageEl = null;
-  if (page === "home") {
-    pageEl = (
-      <Home
-        items={items}
-        onGoItems={() => setPage("items")}
-        onGoAdd={() => setPage("add-item")}
-      />
-    );
-  }
-  if (page === "items") {
-    pageEl = (
-      <Items
-        items={items}
-        query={query}
-        category={category}
-        onDelete={deleteItem}
-        onAdjustQty={adjustQty}
-      />
-    );
-  }
-  if (page === "add-item") {
-    pageEl = <AddItem onAddItem={addItem} onDone={() => setPage("items")} />;
-  }
-
   return (
     <div className="app">
       <AppHeader
@@ -91,19 +66,43 @@ export default function App() {
         onQueryChange={setQuery}
         theme={theme}
         onToggleTheme={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
-        onGoHome={() => setPage("home")}
       />
 
-      <AppNav
-        currentPage={page}
-        onGo={setPage}
-        category={category}
-        onSelectCategory={setCategory}
-      />
+      <AppNav category={category} onSelectCategory={setCategory} />
 
       <main className="app-main">
-        <div className="app-main__content">{pageEl}</div>
-        <Fab onClick={() => setPage("add-item")} />
+        <div className="app-main__content">
+          <Routes>
+            <Route
+              path="/"
+              element={
+                <Home
+                  items={items}
+                  onGoItems={() => navigate("/items")}
+                  onGoAdd={() => navigate("/add-item")}
+                />
+              }
+            />
+            <Route
+              path="/items"
+              element={
+                <Items
+                  items={items}
+                  query={query}
+                  category={category}
+                  onDelete={deleteItem}
+                  onAdjustQty={adjustQty}
+                />
+              }
+            />
+            <Route
+              path="/add-item"
+              element={<AddItem onAddItem={addItem} onDone={() => navigate("/items")} />}
+            />
+          </Routes>
+        </div>
+
+        <Fab onClick={() => navigate("/add-item")} />
       </main>
 
       {byId.size !== items.length ? (

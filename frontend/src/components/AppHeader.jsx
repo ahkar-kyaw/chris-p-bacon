@@ -1,23 +1,23 @@
 import { useId } from "react";
+import { Link } from "react-router";
 
 export default function AppHeader({
   query,
   onQueryChange,
   theme,
   onToggleTheme,
-  onGoHome,
 }) {
   const searchId = useId();
   const nextThemeLabel = theme === "dark" ? "Light mode" : "Dark mode";
 
   return (
     <header className="app-header">
-      <button type="button" className="app-logo" onClick={onGoHome} aria-label="Go to home">
+      <Link to="/" className="app-logo" aria-label="Go to home">
         <span className="app-logo__mark" aria-hidden="true">
           ▦
         </span>
         <span className="app-logo__text">Genos</span>
-      </button>
+      </Link>
 
       <form className="app-search" onSubmit={(e) => e.preventDefault()} role="search">
         <label className="sr-only" htmlFor={searchId}>
