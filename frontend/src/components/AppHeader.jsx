@@ -1,5 +1,6 @@
 import { useId } from "react";
 import { Link } from "react-router";
+import { VALID_ROUTES } from "../shared/ValidRoutes.js";
 
 export default function AppHeader({
   query,
@@ -12,7 +13,7 @@ export default function AppHeader({
 
   return (
     <header className="app-header">
-      <Link to="/" className="app-logo" aria-label="Go to home">
+      <Link to={VALID_ROUTES.HOME} className="app-logo" aria-label="Go to home">
         <span className="app-logo__mark" aria-hidden="true">
           ▦
         </span>

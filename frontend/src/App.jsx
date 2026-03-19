@@ -11,8 +11,10 @@ import Fab from "./components/Fab.jsx";
 import Home from "./pages/Home.jsx";
 import Items from "./pages/Items.jsx";
 import AddItem from "./pages/AddItem.jsx";
+import Login from "./pages/Login.jsx";
 
 import { INITIAL_ITEMS } from "./data/items.js";
+import { VALID_ROUTES } from "./shared/ValidRoutes.js";
 
 function normalizeTheme(next) {
   return next === "dark" ? "dark" : "light";
@@ -74,17 +76,17 @@ export default function App() {
         <div className="app-main__content">
           <Routes>
             <Route
-              path="/"
+              path={VALID_ROUTES.HOME}
               element={
                 <Home
                   items={items}
-                  onGoItems={() => navigate("/items")}
-                  onGoAdd={() => navigate("/add-item")}
+                  onGoItems={() => navigate(VALID_ROUTES.ITEMS)}
+                  onGoAdd={() => navigate(VALID_ROUTES.ADD_ITEM)}
                 />
               }
             />
             <Route
-              path="/items"
+              path={VALID_ROUTES.ITEMS}
               element={
                 <Items
                   items={items}
@@ -96,13 +98,14 @@ export default function App() {
               }
             />
             <Route
-              path="/add-item"
-              element={<AddItem onAddItem={addItem} onDone={() => navigate("/items")} />}
+              path={VALID_ROUTES.ADD_ITEM}
+              element={<AddItem onAddItem={addItem} onDone={() => navigate(VALID_ROUTES.ITEMS)} />}
             />
+            <Route path={VALID_ROUTES.LOGIN} element={<Login />} />
           </Routes>
         </div>
 
-        <Fab onClick={() => navigate("/add-item")} />
+        <Fab onClick={() => navigate(VALID_ROUTES.ADD_ITEM)} />
       </main>
 
       {byId.size !== items.length ? (

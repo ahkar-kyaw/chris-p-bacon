@@ -1,4 +1,5 @@
 import { NavLink } from "react-router";
+import { VALID_ROUTES } from "../shared/ValidRoutes.js";
 import CategoryFilter from "./CategoryFilter.jsx";
 
 function getNavClass({ isActive }) {
@@ -12,17 +13,17 @@ export default function AppNav({ category, onSelectCategory }) {
     <nav className="app-nav" aria-label="Primary">
       <ul className="app-nav__list">
         <li>
-          <NavLink to="/" end className={getNavClass}>
+          <NavLink to={VALID_ROUTES.HOME} end className={getNavClass}>
             Home
           </NavLink>
         </li>
         <li>
-          <NavLink to="/items" className={getNavClass}>
+          <NavLink to={VALID_ROUTES.ITEMS} className={getNavClass}>
             Items
           </NavLink>
         </li>
         <li>
-          <NavLink to="/add-item" className={getNavClass}>
+          <NavLink to={VALID_ROUTES.ADD_ITEM} className={getNavClass}>
             Add Item
           </NavLink>
         </li>
