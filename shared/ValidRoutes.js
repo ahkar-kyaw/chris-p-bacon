@@ -3,4 +3,5 @@ export const VALID_ROUTES = {
   ITEMS: "/items",
   ADD_ITEM: "/add-item",
   LOGIN: "/login",
+  REGISTER: "/register",
 };

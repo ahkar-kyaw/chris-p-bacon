@@ -413,6 +413,40 @@ input, select {
   background: var(--tokens-color-surface-hover);
 }
 
+.login-shell {
+  display: grid;
+  gap: 1rem;
+}
+
+.auth-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+  align-items: start;
+}
+
+.auth-form {
+  margin-top: 1rem;
+}
+
+.status-panel {
+  margin-top: 1rem;
+  padding: 0.75rem 0.875rem;
+  border: 0.063rem solid var(--tokens-color-border);
+  border-radius: 0.75rem;
+  background: var(--tokens-color-surface-tint);
+}
+
+.status-panel--error {
+  font-weight: 600;
+}
+
+.auth-form input:disabled,
+.auth-form button:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
 @media (max-width: 48rem) {
   .app {
     grid-template-columns: 1fr;
@@ -440,3 +474,4 @@ input, select {
     width: 100%;
   }
 }
+

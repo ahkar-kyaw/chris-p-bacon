@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Route, Routes, useNavigate } from "react-router";
+import { Navigate, Route, Routes, useNavigate } from "react-router";
 
 import "./styles/tokens.css";
 import "./styles/styles.css";
@@ -13,6 +13,7 @@ import Items from "./pages/Items.jsx";
 import AddItem from "./pages/AddItem.jsx";
 import Login from "./pages/Login.jsx";
 
+import { ProtectedRoute } from "./ProtectedRoute.jsx";
 import { VALID_ROUTES } from "./shared/ValidRoutes.js";
 
 function normalizeTheme(next) {
@@ -37,14 +38,29 @@ function ErrorPanel({ message }) {
   );
 }
 
+async function getResponseMessage(response, fallbackMessage) {
+  try {
+    const data = await response.json();
+    return data?.message ?? data?.error ?? fallbackMessage;
+  } catch {
+    return fallbackMessage;
+  }
+}
+
 export default function App() {
   const navigate = useNavigate();
+
+  const [authToken, setAuthToken] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [isRegisteringUser, setIsRegisteringUser] = useState(false);
+  const [loginError, setLoginError] = useState("");
+  const [registerError, setRegisterError] = useState("");
 
   const [items, setItems] = useState([]);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("");
   const [theme, setTheme] = useState("light");
-  const [isLoadingItems, setIsLoadingItems] = useState(true);
+  const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [itemsError, setItemsError] = useState("");
 
   useEffect(() => {
@@ -55,14 +71,38 @@ export default function App() {
     let cancelled = false;
 
     async function loadItems() {
+      if (!authToken) {
+        setItems([]);
+        setItemsError("");
+        setIsLoadingItems(false);
+        return;
+      }
+
       setIsLoadingItems(true);
       setItemsError("");
 
       try {
-        const response = await fetch("/api/items");
+        const response = await fetch("/api/items", {
+          headers: {
+            Authorization: `Bearer ${authToken}`,
+          },
+        });
+
+        if (response.status === 401) {
+          if (!cancelled) {
+            setAuthToken("");
+            setItems([]);
+            navigate(VALID_ROUTES.LOGIN, { replace: true });
+          }
+          return;
+        }
 
         if (!response.ok) {
-          throw new Error(`Error: HTTP ${response.status} ${response.statusText}`);
+          const message = await getResponseMessage(
+            response,
+            `Error: HTTP ${response.status} ${response.statusText}`,
+          );
+          throw new Error(message);
         }
 
         const data = await response.json();
@@ -86,9 +126,71 @@ export default function App() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authToken, navigate]);
 
   const byId = useMemo(() => new Map(items.map((it) => [it.id, it])), [items]);
+
+  async function requestAuth(path, payload) {
+    const response = await fetch(path, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const message = await getResponseMessage(
+        response,
+        `Error: HTTP ${response.status} ${response.statusText}`,
+      );
+      throw new Error(message);
+    }
+
+    const data = await response.json();
+    if (!data?.token) {
+      throw new Error("Server did not return an auth token");
+    }
+
+    return data.token;
+  }
+
+  async function handleLoginSubmit(payload) {
+    setLoginError("");
+    setIsLoggingIn(true);
+
+    try {
+      const token = await requestAuth("/api/auth/tokens", payload);
+      setAuthToken(token);
+      navigate(VALID_ROUTES.HOME, { replace: true });
+    } catch (err) {
+      setLoginError(String(err?.message ?? err));
+    } finally {
+      setIsLoggingIn(false);
+    }
+  }
+
+  async function handleRegisterSubmit(payload) {
+    setRegisterError("");
+    setIsRegisteringUser(true);
+
+    try {
+      const token = await requestAuth("/api/users", payload);
+      setAuthToken(token);
+      navigate(VALID_ROUTES.HOME, { replace: true });
+    } catch (err) {
+      setRegisterError(String(err?.message ?? err));
+    } finally {
+      setIsRegisteringUser(false);
+    }
+  }
+
+  function handleUnauthorized() {
+    setAuthToken("");
+    setItems([]);
+    navigate(VALID_ROUTES.LOGIN, { replace: true });
+    throw new Error("Your session expired. Please log in again.");
+  }
 
   async function addItem(formData) {
     setItemsError("");
@@ -98,6 +200,9 @@ export default function App() {
     try {
       response = await fetch("/api/items", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
         body: formData,
       });
     } catch (err) {
@@ -106,15 +211,13 @@ export default function App() {
       throw new Error(message);
     }
 
+    if (response.status === 401) handleUnauthorized();
+
     if (!response.ok) {
-      let message = `Error: HTTP ${response.status} ${response.statusText}`;
-
-      try {
-        const data = await response.json();
-        if (data?.message) message = data.message;
-        else if (data?.error) message = data.error;
-      } catch {}
-
+      const message = await getResponseMessage(
+        response,
+        `Error: HTTP ${response.status} ${response.statusText}`,
+      );
       setItemsError(message);
       throw new Error(message);
     }
@@ -140,21 +243,19 @@ export default function App() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({ qty }),
       });
 
+      if (response.status === 401) handleUnauthorized();
       if (response.status === 404) return;
 
       if (!response.ok) {
-        let message = `Error: HTTP ${response.status} ${response.statusText}`;
-
-        try {
-          const data = await response.json();
-          if (data?.message) message = data.message;
-          else if (data?.error) message = data.error;
-        } catch {}
-
+        const message = await getResponseMessage(
+          response,
+          `Error: HTTP ${response.status} ${response.statusText}`,
+        );
         throw new Error(message);
       }
 
@@ -173,8 +274,12 @@ export default function App() {
     try {
       const response = await fetch(`/api/items/${encodeURIComponent(id)}`, {
         method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
       });
 
+      if (response.status === 401) handleUnauthorized();
       if (response.status === 404) return;
 
       if (!response.ok) {
@@ -234,13 +339,56 @@ export default function App() {
           ) : null}
 
           <Routes>
-            <Route path={VALID_ROUTES.HOME} element={homeElement} />
-            <Route path={VALID_ROUTES.ITEMS} element={itemsElement} />
+            <Route
+              path={VALID_ROUTES.LOGIN}
+              element={
+                authToken ? (
+                  <Navigate to={VALID_ROUTES.HOME} replace />
+                ) : (
+                  <Login
+                    isRegistering={false}
+                    onSubmit={handleLoginSubmit}
+                    isSubmitting={isLoggingIn}
+                    error={loginError}
+                  />
+                )
+              }
+            />
+
+            <Route
+              path={VALID_ROUTES.REGISTER}
+              element={
+                authToken ? (
+                  <Navigate to={VALID_ROUTES.HOME} replace />
+                ) : (
+                  <Login
+                    isRegistering={true}
+                    onSubmit={handleRegisterSubmit}
+                    isSubmitting={isRegisteringUser}
+                    error={registerError}
+                  />
+                )
+              }
+            />
+
+            <Route
+              path={VALID_ROUTES.HOME}
+              element={<ProtectedRoute authToken={authToken}>{homeElement}</ProtectedRoute>}
+            />
+
+            <Route
+              path={VALID_ROUTES.ITEMS}
+              element={<ProtectedRoute authToken={authToken}>{itemsElement}</ProtectedRoute>}
+            />
+
             <Route
               path={VALID_ROUTES.ADD_ITEM}
-              element={<AddItem onAddItem={addItem} onDone={() => navigate(VALID_ROUTES.ITEMS)} />}
+              element={
+                <ProtectedRoute authToken={authToken}>
+                  <AddItem onAddItem={addItem} onDone={() => navigate(VALID_ROUTES.ITEMS)} />
+                </ProtectedRoute>
+              }
             />
-            <Route path={VALID_ROUTES.LOGIN} element={<Login />} />
           </Routes>
         </div>
 
