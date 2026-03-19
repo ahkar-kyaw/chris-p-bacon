@@ -31,6 +31,9 @@ export default function AddItem({ onAddItem, onDone }) {
     qty: "1",
   });
 
+  const [submitError, setSubmitError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const canSubmit = useMemo(() => {
     return values.name.trim().length > 0 && values.sku.trim().length > 0;
   }, [values.name, values.sku]);
@@ -47,6 +50,7 @@ export default function AddItem({ onAddItem, onDone }) {
       category: CATEGORY_OPTIONS[0],
       qty: "1",
     });
+    setSubmitError("");
   }
 
   return (
@@ -57,21 +61,31 @@ export default function AddItem({ onAddItem, onDone }) {
         <h2 className="panel__title">Item details</h2>
 
         <form
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            if (!canSubmit) return;
 
-            onAddItem({
-              id: makeIdFromSku(values.sku),
-              name: values.name.trim(),
-              details: values.details.trim(),
-              sku: values.sku.trim(),
-              category: values.category,
-              qty: Math.max(0, Number(values.qty || 0)),
-            });
+            if (!canSubmit || isSubmitting) return;
 
-            reset();
-            onDone?.();
+            setSubmitError("");
+            setIsSubmitting(true);
+
+            try {
+              await onAddItem({
+                id: makeIdFromSku(values.sku),
+                name: values.name.trim(),
+                details: values.details.trim(),
+                sku: values.sku.trim(),
+                category: values.category,
+                qty: Math.max(0, Number(values.qty || 0)),
+              });
+
+              reset();
+              onDone?.();
+            } catch (err) {
+              setSubmitError(String(err?.message ?? err));
+            } finally {
+              setIsSubmitting(false);
+            }
           }}
         >
           <div className="form-grid">
@@ -137,16 +151,20 @@ export default function AddItem({ onAddItem, onDone }) {
             </label>
 
             <div className="form-actions">
-              <button type="submit" className="button" disabled={!canSubmit}>
-                Save
+              <button type="submit" className="button" disabled={!canSubmit || isSubmitting}>
+                {isSubmitting ? "Saving..." : "Save"}
               </button>
-              <button type="button" className="button" onClick={reset}>
+              <button type="button" className="button" onClick={reset} disabled={isSubmitting}>
                 Reset
               </button>
             </div>
           </div>
 
-          {!canSubmit ? <p className="muted form-hint">Name and SKU are required.</p> : null}
+          {submitError !== "" ? (
+            <p className="muted form-hint">{submitError}</p>
+          ) : !canSubmit ? (
+            <p className="muted form-hint">Name and SKU are required.</p>
+          ) : null}
         </form>
       </section>
     </>
