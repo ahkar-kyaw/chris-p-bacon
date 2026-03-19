@@ -35,6 +35,10 @@ export class ItemProvider {
     const mergedItem = {
       ...existingItem,
       ...nextItem,
+      imageSrc: nextItem.imageSrc || existingItem.imageSrc || "",
+      imageName: nextItem.imageName || existingItem.imageName || "",
+      pdfSrc: nextItem.pdfSrc || existingItem.pdfSrc || "",
+      pdfName: nextItem.pdfName || existingItem.pdfName || "",
       qty: Math.max(0, Number(existingItem.qty || 0) + Number(nextItem.qty || 0)),
     };
 
@@ -43,7 +47,7 @@ export class ItemProvider {
     return { item: mergedItem, created: false };
   }
 
-  async adjustQty(itemId, delta) {
+  async updateQty(itemId, nextQty) {
     const existingItem = await this.collection.findOne(
       { id: itemId },
       { projection: { _id: 0 } },
@@ -53,7 +57,7 @@ export class ItemProvider {
 
     const updatedItem = {
       ...existingItem,
-      qty: Math.max(0, Number(existingItem.qty || 0) + Number(delta || 0)),
+      qty: Math.max(0, Math.trunc(Number(nextQty || 0))),
     };
 
     await this.collection.updateOne({ id: itemId }, { $set: { qty: updatedItem.qty } });

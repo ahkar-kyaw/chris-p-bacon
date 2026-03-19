@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { Link } from "react-router";
+import { Link, useLocation } from "react-router";
 import { VALID_ROUTES } from "../shared/ValidRoutes.js";
 
 export default function AppHeader({
@@ -9,6 +9,8 @@ export default function AppHeader({
   onToggleTheme,
 }) {
   const searchId = useId();
+  const location = useLocation();
+  const showSearch = location.pathname === VALID_ROUTES.ITEMS;
   const nextThemeLabel = theme === "dark" ? "Light mode" : "Dark mode";
 
   return (
@@ -20,20 +22,24 @@ export default function AppHeader({
         <span className="app-logo__text">Genos</span>
       </Link>
 
-      <form className="app-search" onSubmit={(e) => e.preventDefault()} role="search">
-        <label className="sr-only" htmlFor={searchId}>
-          Search inventory
-        </label>
-        <input
-          id={searchId}
-          name="q"
-          type="search"
-          placeholder="Search items, SKUs, categories…"
-          value={query}
-          onChange={(e) => onQueryChange(e.target.value)}
-          autoComplete="off"
-        />
-      </form>
+      {showSearch ? (
+        <form className="app-search" onSubmit={(e) => e.preventDefault()} role="search">
+          <label className="sr-only" htmlFor={searchId}>
+            Search inventory
+          </label>
+          <input
+            id={searchId}
+            name="q"
+            type="search"
+            placeholder="Search items, SKUs, categories…"
+            value={query}
+            onChange={(e) => onQueryChange(e.target.value)}
+            autoComplete="off"
+          />
+        </form>
+      ) : (
+        <div />
+      )}
 
       <div className="app-actions">
         <button

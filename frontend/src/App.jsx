@@ -90,26 +90,31 @@ export default function App() {
 
   const byId = useMemo(() => new Map(items.map((it) => [it.id, it])), [items]);
 
-  async function addItem(nextItem) {
+  async function addItem(formData) {
     setItemsError("");
 
-    const response = await fetch("/api/items", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(nextItem),
-    });
+    let response;
 
-    if (response.status === 400) {
-      const data = await response.json().catch(() => null);
-      const message = data?.error ?? "Missing or invalid item fields";
+    try {
+      response = await fetch("/api/items", {
+        method: "POST",
+        body: formData,
+      });
+    } catch (err) {
+      const message = String(err?.message ?? err);
       setItemsError(message);
       throw new Error(message);
     }
 
     if (!response.ok) {
-      const message = `Error: HTTP ${response.status} ${response.statusText}`;
+      let message = `Error: HTTP ${response.status} ${response.statusText}`;
+
+      try {
+        const data = await response.json();
+        if (data?.message) message = data.message;
+        else if (data?.error) message = data.error;
+      } catch {}
+
       setItemsError(message);
       throw new Error(message);
     }
@@ -127,6 +132,41 @@ export default function App() {
     return savedItem;
   }
 
+  async function updateItemQty(id, qty) {
+    setItemsError("");
+
+    try {
+      const response = await fetch(`/api/items/${encodeURIComponent(id)}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ qty }),
+      });
+
+      if (response.status === 404) return;
+
+      if (!response.ok) {
+        let message = `Error: HTTP ${response.status} ${response.statusText}`;
+
+        try {
+          const data = await response.json();
+          if (data?.message) message = data.message;
+          else if (data?.error) message = data.error;
+        } catch {}
+
+        throw new Error(message);
+      }
+
+      const updatedItem = await response.json();
+
+      setItems((prev) => prev.map((it) => (it.id === id ? updatedItem : it)));
+    } catch (err) {
+      setItemsError(String(err?.message ?? err));
+      throw err;
+    }
+  }
+
   async function deleteItem(id) {
     setItemsError("");
 
@@ -142,32 +182,6 @@ export default function App() {
       }
 
       setItems((prev) => prev.filter((it) => it.id !== id));
-    } catch (err) {
-      setItemsError(String(err?.message ?? err));
-    }
-  }
-
-  async function adjustQty(id, delta) {
-    setItemsError("");
-
-    try {
-      const response = await fetch(`/api/items/${encodeURIComponent(id)}/qty`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ delta }),
-      });
-
-      if (response.status === 404) return;
-
-      if (!response.ok) {
-        throw new Error(`Error: HTTP ${response.status} ${response.statusText}`);
-      }
-
-      const updatedItem = await response.json();
-
-      setItems((prev) => prev.map((it) => (it.id === id ? updatedItem : it)));
     } catch (err) {
       setItemsError(String(err?.message ?? err));
     }
@@ -195,7 +209,7 @@ export default function App() {
       query={query}
       category={category}
       onDelete={deleteItem}
-      onAdjustQty={adjustQty}
+      onUpdateQty={updateItemQty}
     />
   );
 

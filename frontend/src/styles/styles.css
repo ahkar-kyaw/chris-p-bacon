@@ -69,7 +69,7 @@ input, select {
   border-bottom: 0.063rem solid var(--tokens-color-border);
 
   display: grid;
-  grid-template-columns: auto minmax(12.5rem, 1fr) auto;
+  grid-template-columns: auto minmax(5rem, 1fr) auto;
   gap: 0.75rem;
   align-items: center;
   padding: 0.625rem 0.75rem;
@@ -107,6 +107,12 @@ input, select {
   gap: 0.5rem;
   flex-wrap: wrap;
   justify-content: end;
+}
+
+.app-actions button {
+  padding: 0.75rem;
+  display: inline-flex;
+  align-items: center;
 }
 
 .app-nav {
@@ -323,6 +329,90 @@ input, select {
   box-shadow: var(--tokens-shadow-fab);
 }
 
+.muted {
+  color: var(--tokens-color-text-secondary);
+}
+
+.upload-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+}
+
+.preview-wrap {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.preview-image {
+  width: min(100%, 22rem);
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 0.063rem solid var(--tokens-color-border);
+  border-radius: 0.75rem;
+  background: var(--tokens-color-surface-tint);
+}
+
+.item-card__layout {
+  display: grid;
+  gap: 0.875rem;
+  grid-template-columns: minmax(8rem, 12rem) minmax(0, 1fr);
+  align-items: start;
+}
+
+.item-card__content {
+  min-width: 0;
+}
+
+.item-media__image {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border: 0.063rem solid var(--tokens-color-border);
+  border-radius: 0.75rem;
+  background: var(--tokens-color-surface-tint);
+}
+
+.item-media__placeholder {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: grid;
+  place-items: center;
+  border: 0.063rem dashed var(--tokens-color-border);
+  border-radius: 0.75rem;
+  color: var(--tokens-color-text-secondary);
+  background: var(--tokens-color-surface-tint);
+  padding: 0.75rem;
+  text-align: center;
+}
+
+.item-meta {
+  display: grid;
+  gap: 0.25rem;
+  margin-top: 0.75rem;
+}
+
+.qty-editor {
+  min-width: 8rem;
+  max-width: 10rem;
+}
+
+.button-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.625rem;
+  border: 0.063rem solid var(--tokens-color-border);
+  border-radius: 0.5rem;
+  background: var(--tokens-color-surface);
+  color: var(--tokens-color-text-primary);
+  text-decoration: none;
+}
+
+.button-link:hover {
+  background: var(--tokens-color-surface-hover);
+}
+
 @media (max-width: 48rem) {
   .app {
     grid-template-columns: 1fr;
@@ -342,5 +432,11 @@ input, select {
     overflow: auto;
     white-space: nowrap;
     padding-bottom: 0.625rem;
+  }
+  .item-card__layout {
+    grid-template-columns: 1fr;
+  }
+  .preview-image {
+    width: 100%;
   }
 }

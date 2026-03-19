@@ -1,4 +1,4 @@
-import { NavLink } from "react-router";
+import { NavLink, useLocation } from "react-router";
 import { VALID_ROUTES } from "../shared/ValidRoutes.js";
 import CategoryFilter from "./CategoryFilter.jsx";
 
@@ -9,6 +9,9 @@ function getNavClass({ isActive }) {
 }
 
 export default function AppNav({ category, onSelectCategory }) {
+  const location = useLocation();
+  const showCategoryFilter = location.pathname === VALID_ROUTES.ITEMS;
+
   return (
     <nav className="app-nav" aria-label="Primary">
       <ul className="app-nav__list">
@@ -29,7 +32,9 @@ export default function AppNav({ category, onSelectCategory }) {
         </li>
       </ul>
 
-      <CategoryFilter category={category} onSelectCategory={onSelectCategory} />
+      {showCategoryFilter ? (
+        <CategoryFilter category={category} onSelectCategory={onSelectCategory} />
+      ) : null}
     </nav>
   );
 }
