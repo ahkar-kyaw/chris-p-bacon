@@ -63,6 +63,15 @@ export default function App() {
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [itemsError, setItemsError] = useState("");
 
+  function handleLogout() {
+    setAuthToken("");
+    setItems([]);
+    setItemsError("");
+    setLoginError("");
+    setRegisterError("");
+    navigate(VALID_ROUTES.LOGIN, { replace: true });
+  }
+
   useEffect(() => {
     document.documentElement.dataset.theme = normalizeTheme(theme);
   }, [theme]);
@@ -325,6 +334,8 @@ export default function App() {
         onQueryChange={setQuery}
         theme={theme}
         onToggleTheme={() => setTheme((t) => (t === "dark" ? "light" : "dark"))}
+        authToken={authToken}
+        onLogout={handleLogout}
       />
 
       <AppNav category={category} onSelectCategory={setCategory} />

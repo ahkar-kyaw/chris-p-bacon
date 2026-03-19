@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 import { VALID_ROUTES } from "../shared/ValidRoutes.js";
 
@@ -7,11 +7,38 @@ export default function AppHeader({
   onQueryChange,
   theme,
   onToggleTheme,
+  authToken,
+  onLogout,
 }) {
   const searchId = useId();
   const location = useLocation();
   const showSearch = location.pathname === VALID_ROUTES.ITEMS;
   const nextThemeLabel = theme === "dark" ? "Light mode" : "Dark mode";
+
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    function handleWindowClick(event) {
+      if (!userMenuRef.current?.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    }
+
+    function handleEscape(event) {
+      if (event.key === "Escape") {
+        setIsUserMenuOpen(false);
+      }
+    }
+
+    window.addEventListener("click", handleWindowClick);
+    window.addEventListener("keydown", handleEscape);
+
+    return () => {
+      window.removeEventListener("click", handleWindowClick);
+      window.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
 
   return (
     <header className="app-header">
@@ -52,9 +79,39 @@ export default function AppHeader({
           {theme === "dark" ? "Light" : "Dark"}
         </button>
 
-        <button type="button" className="button" onClick={() => alert("Demo only")}>
-          Settings
-        </button>
+        {authToken ? (
+          <div className="user-menu" ref={userMenuRef}>
+            <button
+              type="button"
+              className="button"
+              onClick={() => setIsUserMenuOpen((open) => !open)}
+              aria-haspopup="menu"
+              aria-expanded={isUserMenuOpen}
+            >
+              User
+            </button>
+
+            {isUserMenuOpen ? (
+              <div className="user-menu__panel" role="menu">
+                <button
+                  type="button"
+                  className="user-menu__item"
+                  role="menuitem"
+                  onClick={() => {
+                    setIsUserMenuOpen(false);
+                    onLogout?.();
+                  }}
+                >
+                  Logout
+                </button>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <Link to={VALID_ROUTES.LOGIN} className="button-link">
+            Login
+          </Link>
+        )}
       </div>
     </header>
   );
