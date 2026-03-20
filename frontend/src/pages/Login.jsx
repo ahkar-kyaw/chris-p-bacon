@@ -5,6 +5,7 @@ import { VALID_ROUTES } from "../shared/ValidRoutes.js";
 function getInitialValues(isRegistering) {
   return {
     name: "",
+    username: "",
     email: "",
     password: "",
     ...(isRegistering ? { confirmPassword: "" } : {}),
@@ -19,17 +20,18 @@ export default function LoginPage({ isRegistering, onSubmit, isSubmitting, error
   }, [isRegistering]);
 
   const canSubmit = useMemo(() => {
-  if (isRegistering) {
-    return (
-      values.name.trim().length > 0 &&
-      values.email.trim().length > 0 &&
-      values.password.length > 0 &&
-      values.password === values.confirmPassword
-    );
-  }
+    if (isRegistering) {
+      return (
+        values.name.trim().length > 0 &&
+        values.username.trim().length > 0 &&
+        values.email.trim().length > 0 &&
+        values.password.length > 0 &&
+        values.password === values.confirmPassword
+      );
+    }
 
-  return values.email.trim().length > 0 && values.password.length > 0;
-}, [isRegistering, values]);
+    return values.username.trim().length > 0 && values.password.length > 0;
+  }, [isRegistering, values]);
 
   function update(key, nextValue) {
     setValues((currentValues) => ({
@@ -43,12 +45,13 @@ export default function LoginPage({ isRegistering, onSubmit, isSubmitting, error
     if (!canSubmit || isSubmitting) return;
 
     const payload = {
-      email: values.email.trim(),
+      username: values.username.trim(),
       password: values.password,
     };
 
     if (isRegistering) {
       payload.name = values.name.trim();
+      payload.email = values.email.trim();
     }
 
     await onSubmit(payload);
@@ -62,7 +65,7 @@ export default function LoginPage({ isRegistering, onSubmit, isSubmitting, error
           <p className="muted form-hint">
             {isRegistering
               ? "Create an account to manage inventory from any machine."
-              : "Sign in with your email and password to view your inventory."}
+              : "Sign in with your username and password to view your inventory."}
           </p>
 
           <form onSubmit={handleSubmit} className="form-grid auth-form">
@@ -81,16 +84,30 @@ export default function LoginPage({ isRegistering, onSubmit, isSubmitting, error
             ) : null}
 
             <label className="field">
-              <span>Email</span>
+              <span>Username</span>
               <input
-                type="email"
-                value={values.email}
-                onChange={(event) => update("email", event.target.value)}
-                placeholder="you@example.com"
+                type="text"
+                value={values.username}
+                onChange={(event) => update("username", event.target.value)}
+                placeholder="chrispbacon"
                 disabled={isSubmitting}
                 required
               />
             </label>
+
+            {isRegistering ? (
+              <label className="field">
+                <span>Email</span>
+                <input
+                  type="email"
+                  value={values.email}
+                  onChange={(event) => update("email", event.target.value)}
+                  placeholder="you@example.com"
+                  disabled={isSubmitting}
+                  required
+                />
+              </label>
+            ) : null}
 
             <label className="field">
               <span>Password</span>
@@ -128,8 +145,8 @@ export default function LoginPage({ isRegistering, onSubmit, isSubmitting, error
           {!canSubmit ? (
             <p className="muted form-hint">
               {isRegistering
-                ? "Enter your name, email, and matching passwords."
-                : "Enter your email and password to continue."}
+                ? "Enter your name, username, email, and matching passwords."
+                : "Enter your username and password to continue."}
             </p>
           ) : null}
 

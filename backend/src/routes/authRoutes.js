@@ -2,15 +2,15 @@ import jwt from "jsonwebtoken";
 import { getEnvVar } from "../getEnvVar.js";
 
 /**
- * Creates a Promise for a JWT token, with a specified email embedded inside.
+ * Creates a Promise for a JWT token, with a specified username embedded inside.
  *
- * @param email the email to embed in the JWT token
+ * @param username the username to embed in the JWT token
  * @return a Promise for a JWT
  */
-function generateAuthToken(email) {
+function generateAuthToken(username) {
   return new Promise((resolve, reject) => {
     jwt.sign(
-      { email },
+      { username },
       getEnvVar("JWT_SECRET"),
       { expiresIn: "1d" },
       (error, token) => {
@@ -23,30 +23,36 @@ function generateAuthToken(email) {
 
 export function registerAuthRoutes(app, credentialsProvider) {
   app.post("/api/users", async (req, res) => {
+    const username = req.body?.username;
     const name = req.body?.name;
     const email = req.body?.email;
     const password = req.body?.password;
 
-    if (typeof name !== "string" || typeof email !== "string" || typeof password !== "string") {
+    if (
+      typeof username !== "string" ||
+      typeof name !== "string" ||
+      typeof email !== "string" ||
+      typeof password !== "string"
+    ) {
       res.status(400).send({
         error: "Bad request",
-        message: "Missing name, email, or password",
+        message: "Missing username, name, email, or password",
       });
       return;
     }
 
     try {
-      const ok = await credentialsProvider.registerUser(name, email, password);
+      const ok = await credentialsProvider.registerUser(username, name, email, password);
 
       if (!ok) {
         res.status(409).send({
           error: "Conflict",
-          message: "Email already taken",
+          message: "Username already taken",
         });
         return;
       }
 
-      const token = await generateAuthToken(email.trim().toLowerCase());
+      const token = await generateAuthToken(username.trim());
       res.status(201).json({ token });
     } catch (err) {
       console.error(err);
@@ -55,29 +61,29 @@ export function registerAuthRoutes(app, credentialsProvider) {
   });
 
   app.post("/api/auth/tokens", async (req, res) => {
-    const email = req.body?.email;
+    const username = req.body?.username;
     const password = req.body?.password;
 
-    if (typeof email !== "string" || typeof password !== "string") {
+    if (typeof username !== "string" || typeof password !== "string") {
       res.status(400).send({
         error: "Bad request",
-        message: "Missing email or password",
+        message: "Missing username or password",
       });
       return;
     }
 
     try {
-      const ok = await credentialsProvider.verifyPassword(email, password);
+      const ok = await credentialsProvider.verifyPassword(username, password);
 
       if (!ok) {
         res.status(401).send({
           error: "Unauthorized",
-          message: "Invalid email or password",
+          message: "Invalid username or password",
         });
         return;
       }
 
-      const token = await generateAuthToken(email.trim().toLowerCase());
+      const token = await generateAuthToken(username.trim());
       res.status(200).json({ token });
     } catch (err) {
       console.error(err);

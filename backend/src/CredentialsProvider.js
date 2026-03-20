@@ -13,28 +13,35 @@ export class CredentialsProvider {
   }
 
   async ensureIndexes() {
-    await this.usersCollection.createIndex({ email: 1 }, { unique: true });
-    await this.credsCollection.createIndex({ email: 1 }, { unique: true });
+    await this.usersCollection.createIndex({ username: 1 }, { unique: true });
+    await this.credsCollection.createIndex({ username: 1 }, { unique: true });
   }
 
-  async registerUser(name, email, password) {
+  async registerUser(username, name, email, password) {
+    const normalizedUsername = username.trim();
     const normalizedName = name.trim();
     const normalizedEmail = email.trim().toLowerCase();
 
-    const existingCreds = await this.credsCollection.findOne({ email: normalizedEmail });
+    const existingCreds = await this.credsCollection.findOne({
+      username: normalizedUsername,
+    });
     if (existingCreds) return false;
 
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
     await this.credsCollection.insertOne({
-      email: normalizedEmail,
+      username: normalizedUsername,
       password: hashedPassword,
     });
 
-    const existingUser = await this.usersCollection.findOne({ email: normalizedEmail });
+    const existingUser = await this.usersCollection.findOne({
+      username: normalizedUsername,
+    });
+
     if (!existingUser) {
       await this.usersCollection.insertOne({
+        username: normalizedUsername,
         name: normalizedName,
         email: normalizedEmail,
       });
@@ -43,9 +50,12 @@ export class CredentialsProvider {
     return true;
   }
 
-  async verifyPassword(email, plaintextPassword) {
-    const normalizedEmail = email.trim().toLowerCase();
-    const creds = await this.credsCollection.findOne({ email: normalizedEmail });
+  async verifyPassword(username, plaintextPassword) {
+    const normalizedUsername = username.trim();
+
+    const creds = await this.credsCollection.findOne({
+      username: normalizedUsername,
+    });
 
     if (!creds) return false;
 
